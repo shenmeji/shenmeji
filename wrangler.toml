@@ -1,0 +1,11 @@
+name = "github-static-proxy"  # Worker 服务名称（自定义）
+main = "worker.js"            # 入口脚本文件
+compatibility_date = "2025-06-14" # 兼容日期（必填）
+
+# 自动同步 GitHub 仓库（提交后自动部署）
+[git]
+repo = "您的GitHub用户名/您的仓库名"
+branch = "main"               # 监听的分支
+
+# 绑定自定义域名（可选）
+routes = ["https://您的域名/*"]
