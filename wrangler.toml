@@ -2,4 +2,4 @@ name = "shenmeji"
 compatibility_date = "2025-06-13"
 
 [assets]
-directory = "./dist/"
+bucket = "./dist/"
