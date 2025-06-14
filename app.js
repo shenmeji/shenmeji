@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editorView.classList.replace('d-none', 'd-flex');
         noteTitleInput.value = note.title;
         noteContentTextarea.value = note.content;
-        currentNoteIdSpan.textContent = note.id;
+        document.getElementById('note-id-input').value = note.id;
         renderPreview(note.content);
         renderNoteList(searchInput.value);
         saveNoteBtn.disabled = true;
@@ -101,20 +101,49 @@ document.addEventListener('DOMContentLoaded', () => {
     showSidebarBtn.addEventListener('click', toggleSidebar);
     searchInput.addEventListener('input', () => renderNoteList(searchInput.value));
 
+    function updateNoteLinks(oldId, newId) {
+        // 修复正则表达式转义问题
+        const regex = new RegExp(`\\[\\[${oldId}\\]\\]`, 'g');
+        notes.forEach(note => {
+            note.content = note.content.replace(regex, `[[${newId}]]`);
+        });
+    }
+
     newNoteBtn.addEventListener('click', () => {
         const newId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) + 1 : 1;
         const newNote = { id: newId, title: '未命名笔记', content: '' };
         notes.push(newNote);
         saveNotes();
         displayNote(newId);
+        // 设置新笔记ID输入框的值
+        document.getElementById('note-id-input').value = newId;
         renderNoteList();
         noteTitleInput.focus();
     });
+
+    function isValidNoteId(newId, currentId) {
+        const parsedId = parseInt(newId, 10);
+        if (isNaN(parsedId) || parsedId < 1) return false;
+        return !notes.some(note => note.id === parsedId && note.id !== currentId);
+    }
 
     saveNoteBtn.addEventListener('click', () => {
         if (!currentNoteId) return;
         const note = notes.find(n => n.id === currentNoteId);
         if (note) {
+            const newId = parseInt(document.getElementById('note-id-input').value, 10);
+            if (!isValidNoteId(newId, currentNoteId)) {
+                alert('ID必须是唯一的正整数');
+                return;
+            }
+
+            // 如果ID发生变化，更新所有引用链接
+            if (newId !== note.id) {
+                updateNoteLinks(note.id, newId);
+                note.id = newId;
+                currentNoteId = newId;
+            }
+
             note.title = noteTitleInput.value.trim() || '未命名笔记';
             note.content = noteContentTextarea.value;
             saveNotes();
