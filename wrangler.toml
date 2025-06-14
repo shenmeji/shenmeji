@@ -1,3 +1,8 @@
-name = "shenmeji"  # Worker 服务名称（自定义）
-main = "worker.js"            # 入口脚本文件
-compatibility_date = "2025-06-13" # 兼容日期（必填）
+name = "shenmeji"
+compatibility_date = "2025-06-13"
+
+# wrangler.toml
+[
+assets
+]
+directory = "./dist"  # 假设静态资源构建在dist目录
