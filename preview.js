@@ -1,19 +1,22 @@
 // 添加预览切换功能
+// 编辑文本框显示/隐藏功能
 const togglePreviewBtn = document.getElementById('toggle-preview-btn');
-const previewContainer = document.getElementById('preview-container');
 const noteContentTextarea = document.getElementById('note-content-textarea');
-let isPreviewVisible = false;
+let isEditMode = false;
 
-if (togglePreviewBtn && previewContainer) {
+if (togglePreviewBtn && noteContentTextarea) {
     togglePreviewBtn.addEventListener('click', () => {
-        isPreviewVisible = !isPreviewVisible;
-        previewContainer.classList.toggle('d-none', !isPreviewVisible);
-        togglePreviewBtn.innerHTML = isPreviewVisible 
-            ? '<i class="bi bi-eye-slash me-1"></i>隐藏预览' 
-            : '<i class="bi bi-eye me-1"></i>预览';
-
-        if (isPreviewVisible && noteContentTextarea) {
+        isEditMode = !isEditMode;
+        noteContentTextarea.classList.toggle('d-none', !isEditMode);
+        
+        togglePreviewBtn.innerHTML = isEditMode 
+            ? '<i class="bi bi-eye-slash me-1"></i>隐藏编辑' 
+            : '<i class="bi bi-pencil me-1"></i>编辑';
+        
+        if (!isEditMode) {
             window.renderPreview(noteContentTextarea.value);
+        } else {
+            noteContentTextarea.focus();
         }
     });
 }

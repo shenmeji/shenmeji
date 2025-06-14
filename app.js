@@ -82,19 +82,50 @@ document.addEventListener('DOMContentLoaded', () => {
         notePreview.innerHTML = htmlContent;
     }
 
+    // 初始化预览/编辑状态
+    let isEditMode = false;
+    
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        noteContentTextarea.classList.toggle('d-none', !isEditMode);
+        
+        // 更新按钮文本
+        togglePreviewBtn.innerHTML = isEditMode 
+            ? '<i class="bi bi-eye-slash me-1"></i>隐藏编辑' 
+            : '<i class="bi bi-pencil me-1"></i>编辑';
+        
+        if (!isEditMode) {
+            renderPreview(noteContentTextarea.value);
+        } else {
+            noteContentTextarea.focus();
+        }
+    }
+
+    // 修改displayNote函数，默认显示预览
     function displayNote(id) {
         const note = notes.find(n => n.id === id);
         if (!note) return;
-
+        
         currentNoteId = id;
         welcomeView.classList.replace('d-flex', 'd-none');
         editorView.classList.replace('d-none', 'd-flex');
         noteTitleInput.value = note.title;
         noteContentTextarea.value = note.content;
-        document.getElementById('note-id-input').value = note.id;
+        document.getElementById('current-note-id').textContent = note.id;
+        
+        // 默认显示预览
+        isEditMode = false;
+        noteContentTextarea.classList.add('d-none');
         renderPreview(note.content);
-        renderNoteList(searchInput.value);
-        saveNoteBtn.disabled = true;
+        
+        // 更新按钮状态
+        togglePreviewBtn.innerHTML = '<i class="bi bi-pencil me-1"></i>编辑';
+        
+        // 高亮当前选中的笔记
+        const noteItems = document.querySelectorAll('#note-list .list-group-item');
+        noteItems.forEach(item => {
+            item.classList.toggle('active', parseInt(item.dataset.id) === id);
+        });
     }
 
     hideSidebarBtn.addEventListener('click', toggleSidebar);
@@ -131,19 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentNoteId) return;
         const note = notes.find(n => n.id === currentNoteId);
         if (note) {
-            const newId = parseInt(document.getElementById('note-id-input').value, 10);
-            if (!isValidNoteId(newId, currentNoteId)) {
-                alert('ID必须是唯一的正整数');
-                return;
-            }
-
-            // 如果ID发生变化，更新所有引用链接
-            if (newId !== note.id) {
-                updateNoteLinks(note.id, newId);
-                note.id = newId;
-                currentNoteId = newId;
-            }
-
             note.title = noteTitleInput.value.trim() || '未命名笔记';
             note.content = noteContentTextarea.value;
             saveNotes();
@@ -153,6 +171,41 @@ document.addEventListener('DOMContentLoaded', () => {
             saveNoteBtn.innerHTML = '<i class="bi bi-check-all me-1"></i>已保存!';
             setTimeout(() => { saveNoteBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>保存'; }, 1500);
         }
+    });
+
+    // 修改编号功能
+    const editIdBtn = document.getElementById('edit-id-btn');
+    editIdBtn.addEventListener('click', () => {
+        if (!currentNoteId) return;
+        
+        const newId = prompt('请输入新的笔记编号 (正整数):', currentNoteId);
+        if (newId === null) return; // 用户点击取消
+        
+        if (!newId || isNaN(newId) || parseInt(newId) <= 0) {
+            alert('请输入有效的正整数编号！');
+            return;
+        }
+        
+        const idExists = notes.some(n => n.id === parseInt(newId));
+        if (idExists) {
+            alert('该编号已存在，请使用其他编号！');
+            return;
+        }
+        
+        const oldId = currentNoteId;
+        const note = notes.find(n => n.id === oldId);
+        note.id = parseInt(newId);
+        currentNoteId = note.id;
+        
+        // 更新所有引用该ID的笔记链接
+        notes.forEach(n => {
+            n.content = n.content.replace(new RegExp(`\\[\\[${oldId}\\]\\]`, 'g'), `[[${newId}]]`);
+        });
+        
+        saveNotes();
+        renderNoteList();
+        document.getElementById('current-note-id').textContent = newId;
+        alert('编号修改成功！');
     });
 
     deleteNoteBtn.addEventListener('click', () => {
@@ -179,6 +232,109 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ID修改模态框相关功能
+    function initIdEditModal() {
+    const modal = new bootstrap.Modal(document.getElementById('idEditModal'));
+    const editIdBtn = document.getElementById('edit-id-btn');
+    const currentNoteIdEl = document.getElementById('current-note-id');
+    const newNoteIdInput = document.getElementById('new-note-id');
+    const idErrorMessage = document.getElementById('id-error-message');
+    const confirmIdChangeBtn = document.getElementById('confirm-id-change');
+    
+    // 打开模态框并设置当前ID
+    editIdBtn.addEventListener('click', () => {
+    if (currentNoteId) {
+      const currentNote = notes.find(n => n.id === currentNoteId);
+      currentNoteIdEl.textContent = currentNote.id;
+      newNoteIdInput.value = currentNote.id;
+      idErrorMessage.classList.add('d-none');
+      modal.show();
+    }
+    });
+    
+    // 确认修改ID
+    confirmIdChangeBtn.addEventListener('click', async () => {
+    const newId = parseInt(newNoteIdInput.value);
+    const oldId = currentNote.id;
+    
+    // 验证ID
+    if (!isValidNoteId(newId, oldId)) {
+    idErrorMessage.textContent = 'ID必须是唯一的正整数';
+    idErrorMessage.classList.remove('d-none');
+    return;
+    }
+    
+    try {
+    // 更新ID和相关链接
+    await updateNoteId(oldId, newId);
+    modal.hide();
+    // 刷新笔记列表和当前显示
+    displayNotes();
+    displayNote(newId);
+    showMessage('笔记ID已成功更新');
+    } catch (error) {
+    idErrorMessage.textContent = error.message;
+    idErrorMessage.classList.remove('d-none');
+    }
+    });
+    }
+    
+    // 验证笔记ID是否有效
+    function isValidNoteId(newId, oldId = null) {
+    if (isNaN(newId) || newId < 1 || !Number.isInteger(newId)) {
+    return false;
+    }
+    
+    const notes = getNotes();
+    return !notes.some(note => note.id === newId && note.id !== oldId);
+    }
+    
+    // 更新笔记ID
+    function updateNoteId(oldId, newId) {
+    return new Promise((resolve, reject) => {
+    try {
+    let notes = getNotes();
+    const noteIndex = notes.findIndex(note => note.id === oldId);
+    
+    if (noteIndex === -1) {
+    reject(new Error('未找到该笔记'));
+    return;
+    }
+    
+    // 更新当前笔记ID
+    notes[noteIndex].id = newId;
+    saveNotes(notes);
+    
+    // 更新所有引用该ID的笔记链接
+    updateNoteLinks(oldId, newId);
+    
+    resolve();
+    } catch (error) {
+    reject(error);
+    }
+    });
+    }
+    
+    // 更新所有引用旧ID的笔记链接
+    function updateNoteLinks(oldId, newId) {
+    let notes = getNotes();
+    const oldIdStr = `[[${oldId}]]`;
+    const newIdStr = `[[${newId}]]`;
+    const oldIdRegex = new RegExp(`\[\[${oldId}\]\]`, 'g');
+    
+    notes = notes.map(note => {
+    if (note.content.includes(oldIdStr)) {
+    return {
+    ...note,
+    content: note.content.replace(oldIdRegex, newIdStr)
+    };
+    }
+    return note;
+    });
+    
+    saveNotes(notes);
+    }
+
     function init() {
         loadNotes();
         initSidebarState();
@@ -186,3 +342,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     init();
 });
+togglePreviewBtn.addEventListener('click', toggleEditMode);
