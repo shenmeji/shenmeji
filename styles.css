@@ -1,0 +1,131 @@
+:root {
+    --sidebar-width: 300px;
+    --navbar-height: 56px;
+}
+
+body {
+    background-color: #f8f9fa;
+    overflow-x: hidden;
+}
+
+.navbar {
+    z-index: 1030;
+    height: var(--navbar-height); /* 明确设置导航栏高度 */
+}
+
+#sidebar {
+    position: fixed;
+    top: calc(var(--navbar-height) + 16px);
+    bottom: 16px;
+    left: 16px;
+    width: var(--sidebar-width);
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,.1);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1020;
+    display: flex;
+    flex-direction: column;
+}
+
+body.sidebar-collapsed #sidebar {
+    transform: translateX(calc(-100% - 32px));
+}
+
+#note-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+#note-list .list-group-item {
+    cursor: pointer;
+    border-radius: 0.5rem !important;
+    margin-bottom: 4px;
+    border: none;
+}
+
+#main-content {
+    padding-top: var(--navbar-height); /* 调整为导航栏高度 */
+    height: 100vh;
+    margin-left: calc(var(--sidebar-width) + 32px);
+    transition: margin-left 0.3s ease-in-out;
+    display: flex; /* 使用flex布局 */
+    flex-direction: column;
+}
+
+body.sidebar-collapsed #main-content {
+    margin-left: 64px;
+}
+
+/* 内容容器，添加内边距并允许滚动 */
+#content-container {
+    flex-grow: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.sidebar-toggler {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1021;
+    width: 28px;
+    height: 48px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    color: #6c757d;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.sidebar-toggler:hover {
+    background-color: #e9ecef;
+    color: #000;
+}
+
+#hide-sidebar-btn {
+    left: calc(var(--sidebar-width) + 16px);
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-left: none;
+}
+body.sidebar-collapsed #hide-sidebar-btn {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#show-sidebar-btn {
+    left: 0;
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+    border-left: none;
+    opacity: 0;
+    pointer-events: none;
+}
+body.sidebar-collapsed #show-sidebar-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.note-link { color: var(--bs-primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
+.note-link-broken { color: var(--bs-danger); text-decoration: line-through; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 250px;
+    }
+    #sidebar {
+        box-shadow: 0 0.5rem 3rem rgba(0,0,0,.25);
+    }
+    #main-content {
+        margin-left: 16px !important;
+        margin-right: 16px !important;
+    }
+    .sidebar-toggler {
+        top: 50%;
+    }
+}
