@@ -1,2 +1,2 @@
-[site]
-bucket = "./public"
+[assets]
+directory = "."
