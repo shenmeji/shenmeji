@@ -1,5 +1,2 @@
-name = "shenmeji"
-compatibility_date = "2025-06-13"
-
-[assets]
-bucket = "./dist/"
+[site]
+bucket = "./public"
