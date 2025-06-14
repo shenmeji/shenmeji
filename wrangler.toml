@@ -1,8 +1,5 @@
 name = "shenmeji"
 compatibility_date = "2025-06-13"
 
-# wrangler.toml
-[
-assets
-]
-directory = "./dist"  # 假设静态资源构建在dist目录
+[assets]
+directory = "./dist/"
