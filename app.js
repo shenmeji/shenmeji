@@ -146,7 +146,14 @@ document.addEventListener('DOMContentLoaded', () => {
         notes.push(newNote);
         saveNotes();
         displayNote(newId);
-        // 设置新笔记ID输入框的值
+        
+        // 直接显示编辑框并进入编辑模式
+        const noteContentTextarea = document.getElementById('note-content-textarea');
+        if(noteContentTextarea) {
+            noteContentTextarea.classList.remove('d-none');
+            noteContentTextarea.focus();
+        }
+        
         document.getElementById('note-id-input').value = newId;
         renderNoteList();
         noteTitleInput.focus();

@@ -129,3 +129,12 @@ body.sidebar-collapsed #show-sidebar-btn {
         top: 50%;
     }
 }
+
+
+/* 添加文本区域样式 */
+#note-content-textarea {
+    min-height: 300px;
+    height: 100%;
+    resize: vertical;
+    overflow-y: auto;
+}
