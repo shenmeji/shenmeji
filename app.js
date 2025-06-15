@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadNotes() {
         const notesData = localStorage.getItem('chain-notes-data-bs');
-        notes = notesData ? JSON.parse(notesData) : [{ id: 1, title: '欢迎使用', content: '这是链式笔记系统！\n\n- 点击侧边栏右侧的 « 按钮可以收起它。\n- 点击屏幕左侧的 » 按钮可以把它叫出来。\n- 链接语法是 [[ID]] 或 [[标题]]。'}];
+        notes = notesData ? JSON.parse(notesData) : [{ id: 1, title: '欢迎使用', content: '什么记除了支持markdown，还是一个链式笔记系统！\n\n- 点击侧边栏右侧的 « 按钮可以收起它。\n- 点击屏幕左侧的 » 按钮可以把它叫出来。\n- 链接语法是 [[ID]] 或 [[标题]]。'}];
     }
 
     function saveNotes() {
